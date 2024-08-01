@@ -2,8 +2,10 @@
 #+AUTHOR: Andrew Guschin
 #+PROPERTY: tangle yes
 
-* Configuration
+* Basic settings
 
+This starts with some settings that are useful for already initialized configuration. I set up
+theme first thing so that the default one doesn't blind me at night. Also set up the correct font.
 #+BEGIN_SRC emacs-lisp
   (when (package-installed-p 'ayu-theme)
     (load-theme 'ayu-grey t))
@@ -12,26 +14,30 @@
                '(font . "FiraCode Nerd Font 15"))
 #+END_SRC
 
+Menu bar looks okay in macOS because it's contained in global menu bar of OS for focused window.
+I'd say that bar without application's menu looks strange on macOS. On linux menu is attached to
+every client, so this doesn't look that good, so it better be turned off.
 #+BEGIN_SRC emacs-lisp
   (when (eq system-type 'gnu/linux)
     (menu-bar-mode -1))
   (when (eq system-type 'darwin)
     (menu-bar-mode t))
-  (tool-bar-mode -1)
-  (toggle-scroll-bar -1)
-  (xterm-mouse-mode 1)
-  (buffer-face-mode)
-  (global-set-key (kbd "C-<wheel-up>") 'ignore)
-  (global-set-key (kbd "C-<wheel-down>") 'ignore)
-  (pixel-scroll-precision-mode t)
-  (setq frame-resize-pixelwise t)
 #+END_SRC
 
+Disable more of unneeded app decorations (now for all OSes), enable some niceties, and disable
+several annoying things. Looks like pixel scrolling works only on macOS.
 #+BEGIN_SRC emacs-lisp
-  (setq-default display-line-numbers-mode nil)
-  (setq-default display-line-numbers nil)
-  (add-hook 'prog-mode-hook
-            (lambda () (display-line-numbers-mode t)))
+  (tool-bar-mode -1)
+  (toggle-scroll-bar -1)
+  (xterm-mouse-mode t)
+  (buffer-face-mode t)
+  (pixel-scroll-precision-mode t)
+  (setq frame-resize-pixelwise t)
+  (setq-default fill-column 100)
+  (global-display-fill-column-indicator-mode t)
+  (global-set-key (kbd "C-<wheel-up>") 'ignore)
+  (global-set-key (kbd "C-<wheel-down>") 'ignore)
+  (setq ring-bell-function 'ignore)
 #+END_SRC
 
 #+BEGIN_SRC emacs-lisp
@@ -41,12 +47,37 @@
   (setq-default c-basic-offset 4)
 #+END_SRC
 
+* Package management
+Several packages are not present in GNU ELPA, so I need to add MELPA archive.
 #+BEGIN_SRC emacs-lisp
   (add-to-list 'package-archives
                '("melpa" . "https://melpa.org/packages/") t)
-  (setq-default use-package-always-ensure t)
 #+END_SRC
 
+For package management I use use-package with always-ensure flag turned on. That way on new installs
+this config bootstraps itself.
+#+BEGIN_SRC emacs-lisp
+  (setq-default use-package-always-ensure t)
+  (unless (package-installed-p 'use-package)
+    (package-refresh-contents)
+    (package-install 'use-package))
+  (require 'use-package)
+#+END_SRC
+
+* Plugins
+
+** Theme
+Install some nice theme. It is loaded in the beginning of the config, so after bootstrapping emacs
+should be restarted. Or this theme can be loaded by hand...
+#+BEGIN_SRC emacs-lisp
+  (use-package ayu-theme)
+#+END_SRC
+
+** evil-mode
+Emacs is great operating system that doesn't have good editor.
+
+It is useful to enable relative numbering of lines in normal state, for easier use of motions. But
+in insert mode it is not so useful, so this turns on regular numbering for this mode.
 #+BEGIN_SRC emacs-lisp
   (use-package evil
     :hook
@@ -55,16 +86,17 @@
     (evil-normal-state-entry . (lambda () (setq display-line-numbers 'relative)))
     :config
     (evil-mode 1))
+  (add-hook 'prog-mode-hook
+            (lambda () (display-line-numbers-mode t)))
 #+END_SRC
 
-#+BEGIN_SRC emacs-lisp
-  (use-package ayu-theme)
-#+END_SRC
-
+** magit
+Just great git client. I don't have any configurations for it yet.
 #+BEGIN_SRC emacs-lisp
   (use-package magit)
 #+END_SRC
 
+** lisp packages
 #+BEGIN_SRC emacs-lisp
   (use-package paredit
     :hook
@@ -74,6 +106,7 @@
     (emacs-lisp-mode . rainbow-delimiters-mode))
 #+END_SRC
 
+** exec-path-from-shell
 #+BEGIN_SRC emacs-lisp
   (use-package exec-path-from-shell
     :config
@@ -86,6 +119,7 @@
       (exec-path-from-shell-initialize)))
 #+END_SRC
 
+** LSP
 #+BEGIN_SRC emacs-lisp
   (use-package lsp-mode
     :init
@@ -105,6 +139,7 @@
   (use-package helm-lsp :commands helm-lsp-workspace-symbol)
 #+END_SRC
 
+* Something
 #+BEGIN_SRC emacs-lisp
   (defun my-backup-file-name (fpath)
     "Return a new file path of a given file path. If the new path's

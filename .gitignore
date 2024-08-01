@@ -1,3 +1,11 @@
+.*
+!.gitignore
 elpa
 auto-save-list
 backup
+eln-cache/
+transient/
+eshell/
+custom.el
+config.el
+

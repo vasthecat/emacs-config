@@ -2,111 +2,122 @@
 #+AUTHOR: Andrew Guschin
 #+PROPERTY: tangle yes
 
+* Configuration
+
 #+BEGIN_SRC emacs-lisp
-(when (package-installed-p 'ayu-theme)
-  (load-theme 'ayu-grey t))
+  (when (package-installed-p 'ayu-theme)
+    (load-theme 'ayu-grey t))
 
-(add-to-list 'default-frame-alist
-             '(font . "FiraCode Nerd Font 15"))
+  (add-to-list 'default-frame-alist
+               '(font . "FiraCode Nerd Font 15"))
+#+END_SRC
 
-;;; GUI settings:
-(when (eq system-type 'gnu/linux)
-  (menu-bar-mode -1))
-(when (eq system-type 'darwin)
-  (menu-bar-mode t))
-(tool-bar-mode -1)
-(toggle-scroll-bar -1)
-(xterm-mouse-mode 1)
-(buffer-face-mode)
-(global-set-key (kbd "C-<wheel-up>") 'ignore)
-(global-set-key (kbd "C-<wheel-down>") 'ignore)
-(setq-default display-line-numbers-mode nil)
-(setq-default display-line-numbers nil)
-(add-hook 'prog-mode-hook
-          (lambda () (display-line-numbers-mode t)))
-(pixel-scroll-precision-mode t)
-(setq frame-resize-pixelwise t)
+#+BEGIN_SRC emacs-lisp
+  (when (eq system-type 'gnu/linux)
+    (menu-bar-mode -1))
+  (when (eq system-type 'darwin)
+    (menu-bar-mode t))
+  (tool-bar-mode -1)
+  (toggle-scroll-bar -1)
+  (xterm-mouse-mode 1)
+  (buffer-face-mode)
+  (global-set-key (kbd "C-<wheel-up>") 'ignore)
+  (global-set-key (kbd "C-<wheel-down>") 'ignore)
+  (pixel-scroll-precision-mode t)
+  (setq frame-resize-pixelwise t)
+#+END_SRC
 
-(setq-default indent-tabs-mode nil)
-(setq-default tab-width 4)
-(setq-default c-default-style "bsd")
-(setq-default c-basic-offset 4)
+#+BEGIN_SRC emacs-lisp
+  (setq-default display-line-numbers-mode nil)
+  (setq-default display-line-numbers nil)
+  (add-hook 'prog-mode-hook
+            (lambda () (display-line-numbers-mode t)))
+#+END_SRC
 
-(add-to-list 'package-archives
-             '("melpa" . "https://melpa.org/packages/") t)
+#+BEGIN_SRC emacs-lisp
+  (setq-default indent-tabs-mode nil)
+  (setq-default tab-width 4)
+  (setq-default c-default-style "bsd")
+  (setq-default c-basic-offset 4)
+#+END_SRC
 
-(defun ensure-packages (packages)
-  (dolist (name packages)
-    (unless (package-installed-p name)
-      (package-install name))))
+#+BEGIN_SRC emacs-lisp
+  (add-to-list 'package-archives
+               '("melpa" . "https://melpa.org/packages/") t)
+  (setq-default use-package-always-ensure t)
+#+END_SRC
 
-(ensure-packages '(evil))
-(use-package evil
-  :hook
-  (evil-insert-state-entry . (lambda () (setq display-line-numbers t)))
-  :hook
-  (evil-normal-state-entry . (lambda () (setq display-line-numbers 'relative)))
-  :config
-  (evil-mode 1))
+#+BEGIN_SRC emacs-lisp
+  (use-package evil
+    :hook
+    (evil-insert-state-entry . (lambda () (setq display-line-numbers t)))
+    :hook
+    (evil-normal-state-entry . (lambda () (setq display-line-numbers 'relative)))
+    :config
+    (evil-mode 1))
+#+END_SRC
 
-(ensure-packages '(ayu-theme))
+#+BEGIN_SRC emacs-lisp
+  (use-package ayu-theme)
+#+END_SRC
 
-(ensure-packages '(magit))
+#+BEGIN_SRC emacs-lisp
+  (use-package magit)
+#+END_SRC
 
-(ensure-packages '(paredit rainbow-delimiters))
-(use-package paredit
-  :hook
-  (emacs-lisp-mode . paredit-mode))
-(use-package rainbow-delimiters
-  :hook
-  (emacs-lisp-mode . rainbow-delimiters-mode))
+#+BEGIN_SRC emacs-lisp
+  (use-package paredit
+    :hook
+    (emacs-lisp-mode . paredit-mode))
+  (use-package rainbow-delimiters
+    :hook
+    (emacs-lisp-mode . rainbow-delimiters-mode))
+#+END_SRC
 
+#+BEGIN_SRC emacs-lisp
+  (use-package exec-path-from-shell
+    :config
+    (when (memq window-system '(mac ns x))
+      (setenv "EMACS" "emacs")
+      (setq exec-path-from-shell-variables
+            '("PATH" "CARGO_HOME" "RUSTUP_HOME" "GOPATH"
+              "RYE_HOME" "NPM_CONFIG_USERCONFIG"
+              "STACK_ROOT" "GHCUP_USE_XDG_DIRS"))
+      (exec-path-from-shell-initialize)))
+#+END_SRC
 
-(ensure-packages '(exec-path-from-shell))
-(use-package exec-path-from-shell
-  :config
-  (when (memq window-system '(mac ns x))
-    (setenv "EMACS" "emacs")
-    (setq exec-path-from-shell-variables
-	  '("PATH" "CARGO_HOME" "RUSTUP_HOME" "GOPATH"
-	    "RYE_HOME" "NPM_CONFIG_USERCONFIG"
-	    "STACK_ROOT" "GHCUP_USE_XDG_DIRS"))
-    (exec-path-from-shell-initialize)))
+#+BEGIN_SRC emacs-lisp
+  (use-package lsp-mode
+    :init
+    ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
+    (setq lsp-keymap-prefix "C-c l")
+    (use-package rust-mode)
+    (use-package lsp-java)
+    (setq lsp-java-server-install-dir
+          (concat (getenv "HOME") "/.local/share/jdtls/"))
+    ;; if you want which-key integration
+    ;;(lsp-mode . lsp-enable-which-key-integration))
+    :hook ((rust-mode . lsp)
+           (java-mode . lsp)
+           (c++-mode . lsp))
+    :commands lsp)
+  (use-package lsp-ui :commands lsp-ui-mode)
+  (use-package helm-lsp :commands helm-lsp-workspace-symbol)
+#+END_SRC
 
-(ensure-packages '(rust-mode
-                   lsp-java
-                   lsp-ui
-                   company
-                   helm
-                   avy))
-(use-package lsp-mode
-  :init
-  ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
-  (setq lsp-keymap-prefix "C-c l")
-  (use-package rust-mode)
-  (use-package lsp-java)
-  (setq lsp-java-server-install-dir
-        (concat (getenv "HOME") "/.local/share/jdtls/"))
-  ;; if you want which-key integration
-  ;;(lsp-mode . lsp-enable-which-key-integration))
-  :hook ((rust-mode . lsp)
-         (java-mode . lsp)
-         (c++-mode . lsp))
-  :commands lsp)
-(use-package lsp-ui :commands lsp-ui-mode)
-(use-package helm-lsp :commands helm-lsp-workspace-symbol)
+#+BEGIN_SRC emacs-lisp
+  (defun my-backup-file-name (fpath)
+    "Return a new file path of a given file path. If the new path's
+     directories does not exist, create them."
+    (let* ((backupRootDir (expand-file-name "backup" user-emacs-directory))
+           (filePath (replace-regexp-in-string "[A-Za-z]:" "" fpath )) ; remove Windows driver letter in path, for example, “C:”
+           (backupFilePath (replace-regexp-in-string "//" "/" (concat backupRootDir filePath "~") )))
+      (make-directory (file-name-directory backupFilePath) (file-name-directory backupFilePath))
+      backupFilePath))
+  (setq make-backup-file-name-function 'my-backup-file-name)
+#+END_SRC
 
-
-(defun my-backup-file-name (fpath)
-  "Return a new file path of a given file path. If the new path's
-   directories does not exist, create them."
-  (let* ((backupRootDir (expand-file-name "backup" user-emacs-directory))
-         (filePath (replace-regexp-in-string "[A-Za-z]:" "" fpath )) ; remove Windows driver letter in path, for example, “C:”
-         (backupFilePath (replace-regexp-in-string "//" "/" (concat backupRootDir filePath "~") )))
-    (make-directory (file-name-directory backupFilePath) (file-name-directory backupFilePath))
-    backupFilePath))
-(setq make-backup-file-name-function 'my-backup-file-name)
-
-(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
-(load custom-file)
+#+BEGIN_SRC emacs-lisp
+  (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+  (load custom-file)
 #+END_SRC

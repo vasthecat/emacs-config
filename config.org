@@ -78,14 +78,23 @@ Emacs is great operating system that doesn't have good editor.
 
 It is useful to enable relative numbering of lines in normal state, for easier use of motions. But
 in insert mode it is not so useful, so this turns on regular numbering for this mode.
+
+But in some major modes evil shadows their keymaps, so I set their initial state to emacs's keymaps.
 #+BEGIN_SRC emacs-lisp
   (use-package evil
-    :hook
-    (evil-insert-state-entry . (lambda () (setq display-line-numbers t)))
-    :hook
-    (evil-normal-state-entry . (lambda () (setq display-line-numbers 'relative)))
     :config
-    (evil-mode 1))
+    (evil-mode t)
+    (evil-set-initial-state 'fundamental-mode 'emacs)
+    (evil-set-initial-state 'dired-mode 'emacs)
+    (evil-set-initial-state 'eshell-mode 'emacs)
+    (evil-set-initial-state 'shell-mode 'emacs)
+    (evil-set-initial-state 'buffer-menu-mode 'emacs)
+    :hook
+    (evil-insert-state-entry . (lambda () (setq-local display-line-numbers t)))
+    :hook
+    (evil-normal-state-entry . (lambda () (setq-local display-line-numbers 'relative))))
+
+  (global-display-line-numbers-mode -1)
   (add-hook 'prog-mode-hook
             (lambda () (display-line-numbers-mode t)))
 #+END_SRC

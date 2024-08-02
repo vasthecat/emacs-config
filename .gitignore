@@ -1,5 +1,6 @@
 .*
 !.gitignore
+\#*
 elpa
 auto-save-list
 backup

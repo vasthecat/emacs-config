@@ -84,7 +84,6 @@ But in some major modes evil shadows their keymaps, so I set their initial state
   (use-package evil
     :config
     (evil-mode t)
-    (evil-set-initial-state 'fundamental-mode 'emacs)
     (evil-set-initial-state 'dired-mode 'emacs)
     (evil-set-initial-state 'eshell-mode 'emacs)
     (evil-set-initial-state 'shell-mode 'emacs)
@@ -134,6 +133,7 @@ Just great git client. I don't have any configurations for it yet.
     :init
     ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
     (setq lsp-keymap-prefix "C-c l")
+    (use-package company :init (company-mode t))
     (use-package rust-mode)
     (use-package lsp-java)
     (setq lsp-java-server-install-dir

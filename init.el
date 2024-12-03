@@ -7,9 +7,14 @@
 (setq config-path (expand-file-name "config.org" user-emacs-directory))
 (setq config-untangled-path (expand-file-name "config.el" user-emacs-directory))
 
+(when (eq system-type 'gnu/linux)
+  (setq md5-cmd "md5sum --zero "))
+(when (eq system-type 'darwin)
+  (setq md5-cmd "md5 -q "))
+
 ;; Since config is residing inside one file, I can calculate its checksum and tangle config.org only
 ;; when it was changed. This way loading is significantly faster.
-(setq new-checksum (car (split-string (shell-command-to-string (concat "md5sum --zero " config-path)))))
+(setq new-checksum (car (split-string (shell-command-to-string (concat md5-cmd config-path)))))
 (setq saved-checksum "")
 (when (file-exists-p checksum-path)
   (setq saved-checksum (with-temp-buffer

@@ -54,8 +54,8 @@ several annoying things. Looks like pixel scrolling works only on macOS.
   (toggle-scroll-bar -1)
   (xterm-mouse-mode t)
   (buffer-face-mode t)
-  (pixel-scroll-precision-mode t)
-  (setq frame-resize-pixelwise t)
+  ;; (pixel-scroll-precision-mode t)
+  ;; (setq frame-resize-pixelwise t)
   (setq-default fill-column 100)
   (global-display-fill-column-indicator-mode t)
   (global-set-key (kbd "C-<wheel-up>") 'ignore)
@@ -335,34 +335,35 @@ servers (most of the time with multiple for single buffer, even).
 
 ** Tree-sitter
 #+BEGIN_SRC emacs-lisp
-    (use-package treesit
-      :ensure nil
-      :config
-      (setq-default
-       treesit-language-source-alist
-       '((tsx . ("https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src"))
-         (typescript . ("https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src"))
-         ))
-      (treesit-install-language-grammar 'tsx)
-      (treesit-install-language-grammar 'typescript)
-      )
+  ;; (use-package treesit
+  ;;   :ensure nil
+  ;;   :config
+  ;;   (setq-default
+  ;;    treesit-language-source-alist
+  ;;    '((tsx . ("https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src"))
+  ;;      (typescript . ("https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src"))
+  ;;      ))
+  ;;   (treesit-install-language-grammar 'tsx)
+  ;;   (treesit-install-language-grammar 'typescript)
+  ;;   )
 
-    ;; (use-package treesit-auto
-    ;;   :config
-    ;;   (add-to-list 'treesit-auto-recipe-list
-    ;;                (make-treesit-auto-recipe
-    ;;                 :lang 'tsx
-    ;;                 :ts-mode 'tsx-ts-mode
-    ;;                 :url "https://github.com/tree-sitter/tree-sitter-typescript"
-    ;;                 :source-dir "tsx/src"
-    ;;                 :ext "\\.tsx\\'"))
-    ;;   (setq treesit-auto-langs '(tsx))
-    ;;   )
+  (use-package treesit-auto
+    :config
+    (add-to-list 'treesit-auto-recipe-list
+                 (make-treesit-auto-recipe
+                  :lang 'typescript
+                  :ts-mode 'tsx-ts-mode
+                  :url "https://github.com/tree-sitter/tree-sitter-typescript"
+                  :source-dir "tsx/src"
+                  :ext "\\.tsx\\'"))
+    :custom
+    (treesit-auto-langs '(tsx))
+    )
 
-    ;; (use-package tree-sitter
-    ;;   :init
-    ;;   (use-package tree-sitter-langs)
-    ;;   :hook (tree-sitter-after-on . tree-sitter-hl-mode))
+  ;; (use-package tree-sitter
+  ;;   :init
+  ;;   (use-package tree-sitter-langs)
+  ;;   :hook (tree-sitter-after-on . tree-sitter-hl-mode))
 #+END_SRC
 
 ** Spelling

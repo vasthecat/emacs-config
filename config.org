@@ -24,11 +24,13 @@ it as it is.
 This starts with some settings that are useful for already initialized configuration. I set up
 theme first thing so that the default one doesn't blind me at night. Also set up the correct font.
 #+BEGIN_SRC emacs-lisp
-  (when (package-installed-p 'ayu-theme)
-    (load-theme 'ayu-grey t))
+  ;; (when (package-installed-p 'ayu-theme)
+  ;;   (load-theme 'ayu-grey t))
 
-  ;; (when (package-installed-p 'kaolin-themes)
-  ;;   (load-theme 'kaolin-breeze t))
+  (when (package-installed-p 'kaolin-themes)
+    (load-theme 'kaolin-galaxy t)
+    ;; (load-theme 'kaolin-breeze t)
+    )
 
   (add-to-list 'default-frame-alist
                '(font . "FiraCode Nerd Font 15"))
@@ -141,12 +143,15 @@ But in some major modes evil shadows their keymaps, so I set their initial state
 #+BEGIN_SRC emacs-lisp
   (global-display-line-numbers-mode -1)
   (use-package evil
+    :init
+    (use-package undo-fu)
+    (setq evil-undo-system 'undo-fu)
+    (setq evil-want-keybinding nil)
     :config
-    (evil-set-initial-state 'dired-mode 'emacs)
+    ;; (evil-set-initial-state 'dired-mode 'emacs)
     (evil-set-initial-state 'eshell-mode 'emacs)
     (evil-set-initial-state 'shell-mode 'emacs)
     (evil-set-initial-state 'buffer-menu-mode 'emacs)
-    (evil-set-initial-state 'fundamental-mode 'emacs)
     (define-key universal-argument-map (kbd "C-u") nil)
     (define-key evil-motion-state-map (kbd "C-u") 'evil-scroll-up)
     :hook
@@ -156,6 +161,26 @@ But in some major modes evil shadows their keymaps, so I set their initial state
      (text-mode . display-line-numbers-mode)
      (evil-insert-state-entry . (lambda () (setq-local display-line-numbers t)))
      (evil-normal-state-entry . (lambda () (setq-local display-line-numbers 'relative)))))
+
+  ;; (eval-after-load "dired"
+  ;;   '(progn
+  ;;      (dired-listing-switches )
+  ;;      ))
+
+  (use-package evil-collection
+    :after evil
+    :after dired
+    :init
+    (evil-collection-init '(dired))
+    (use-package dired-subtree)
+    :config
+    (evil-collection-define-key 'normal 'dired-mode-map
+      "o" 'dired-subtree-toggle
+      "c" 'dired-subtree-remove
+      "i" nil
+      "a" nil
+      "A" nil
+      ))
 #+END_SRC
 
 I use `C-u` keymap from vim very often, but in emacs it is bound to 'universal argument'.
@@ -214,77 +239,130 @@ Configuration for some languages that I used in Emacs. Not all the languages tha
 recent ones. If I decide to try something new, or open some old project in Emacs, this config
 (probably) will be updated.
 #+BEGIN_SRC emacs-lisp
-    (use-package lsp-mode
-      :init
-      ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
-      (setq lsp-keymap-prefix "C-l")
-      (use-package company)
-      (use-package rust-mode)
-      (use-package go-mode)
-      (use-package lsp-java
-        :custom (setq lsp-java-server-install-dir
-                      (concat (getenv "HOME") "/.local/share/jdtls/")))
-      (use-package web-mode)
-      ;; if you want which-key integration
-      ;;(lsp-mode . lsp-enable-which-key-integration))
-      :hook ((lsp-mode . company-mode)
-             (rust-mode . lsp)
-             (go-mode . lsp)
-             (java-mode . lsp)
-             (c++-mode . lsp)
-             (web-mode . lsp))
-      :commands lsp
-      ;; Saved in case I use vue.js with lsp some other time
-      ;; :custom
-      ;; (lsp-clients-typescript-plugins
-      ;;  (vector (list :name "@vue/typescript-plugin"
-      ;;                :location (concat (getenv "BUN_INSTALL")
-      ;;                                  "/install/global/node_modules/@vue/typescript-plugin")
-      ;;                :languages (vector "typescript" "javascript" "vue"))))
-      )
-    (use-package flycheck :hook (after-init . #'global-flyckeck-mode))
-    (use-package lsp-ui :commands lsp-ui-mode)
-    (use-package helm-lsp :commands helm-lsp-workspace-symbol)
+  (setq major-mode-remap-alist
+        '(;; (typescript-mode  . typescript-ts-mode)
+          (rust-mode . rust-ts-mode)
+          ))
+  (use-package lsp-mode
+    :init
+    ;; set prefix for lsp-command-keymap (few alternatives - "C-l", "C-c l")
+    (setq lsp-keymap-prefix "C-l")
+    (use-package company)
+    (use-package rust-mode)
+    (use-package go-mode)
+    (use-package projectile)
+    (use-package lsp-java
+      :custom (setq lsp-java-server-install-dir
+                    (concat (getenv "HOME") "/.local/share/jdtls/")))
+    ;; (use-package typescript-mode)
+    (use-package lsp-tailwindcss
+      :after lsp-mode
+      :init (setq lsp-tailwindcss-add-on-mode t))
+    (use-package web-mode)
+    ;; if you want which-key integration
+    ;;(lsp-mode . lsp-enable-which-key-integration))
+    :hook ((lsp-mode . company-mode)
+           (rust-ts-mode . lsp)
+           (rust-ts-mode . projectile-mode)
+           (go-mode . lsp)
+           (java-mode . lsp)
+           (c++-mode . lsp)
+           ;; (web-mode . lsp)
+           ;; (typescript-mode . add-node-modules-path)
+           ;; (typescript-mode . web-mode)
+           (typescript-ts-mode . lsp)
+           (typescript-ts-mode . projectile-mode)
+           (typescript-ts-mode . prettier-js-mode)
+           (tsx-ts-mode . lsp)
+           (tsx-ts-mode . projectile-mode)
+           (tsx-ts-mode . prettier-js-mode)
+           ;; (typescript-mode . (lambda ()
+           ;;                      (projectile-mode)
+           ;;                      (lsp)
+           ;;                      ))
+           )
+    :commands lsp
+    :custom
+    (lsp-clients-typescript-prefer-use-project-ts-server 1)
+    (lsp-clients-typescript-tls-path
+          (concat (projectile-project-root)
+                  "node_modules/.bin/typescript-language-server"))
+    ;; () 
+    ;; Saved in case I use vue.js with lsp some other time
+    ;; :custom
+    ;; (lsp-clients-typescript-plugins
+    ;;  (vector (list :name "@vue/typescript-plugin"
+    ;;                :location (concat (getenv "BUN_INSTALL")
+    ;;                                  "/install/global/node_modules/@vue/typescript-plugin")
+    ;;                :languages (vector "typescript" "javascript" "vue"))))
+    )
+  (use-package flycheck :hook (after-init . #'global-flyckeck-mode))
+  (use-package lsp-ui :commands lsp-ui-mode)
+  (use-package helm-lsp :commands helm-lsp-workspace-symbol)
 #+END_SRC
 
 Web development tools need more configuration, than most other languages. So all of this
 configuration is done inside web-mode, because most web projects are used with multiple language
 servers (most of the time with multiple for single buffer, even).
 #+BEGIN_SRC emacs-lisp
-  (use-package web-mode
-    :init
-    (use-package prettier-js)
-    (use-package typescript-mode)
-    (use-package vue-mode)
-    (use-package svelte-mode)
-    (use-package lsp-tailwindcss
-      :after lsp-mode
-      :init (setq lsp-tailwindcss-add-on-mode t))
-    :after lsp-mode
-    :hook ((web-mode . prettier-js-mode))
-    :mode (("\\.ts\\'" . web-mode)
-           ("\\.js\\'" . web-mode)
-           ("\\.vue\\'" . web-mode)
-           ("\\.tsx\\'" . web-mode)
-           ("\\.jsx\\'" . web-mode))
-    :config
-    (setq web-mode-markup-indent-offset 2)
-    (setq web-mode-css-indent-offset 2)
-    (setq web-mode-code-indent-offset 2)
-    (setq web-mode-script-padding 0)
-    (setq web-mode-style-padding 0)
-    (setq web-mode-block-padding 0)
-    (setq web-mode-content-types-alist
-          '(("jsx" . "\\.js[x]?\\'"))))
+  ;; (use-package web-mode
+  ;;   :init
+  ;;   (use-package prettier-js)
+  ;;   (use-package vue-mode)
+  ;;   (use-package svelte-mode)
+  ;;   (use-package lsp-tailwindcss
+  ;;     :after web-mode
+  ;;     :init (setq lsp-tailwindcss-add-on-mode t))
+  ;;   :after lsp-mode
+  ;;   :hook ((web-mode . prettier-js-mode))
+  ;;   :mode (("\\.ts\\'" . web-mode)
+  ;;          ("\\.js\\'" . web-mode)
+  ;;          ("\\.vue\\'" . web-mode)
+  ;;          ("\\.tsx\\'" . web-mode)
+  ;;          ("\\.jsx\\'" . web-mode))
+  ;;   :config
+  ;;   (setq web-mode-markup-indent-offset 2)
+  ;;   (setq web-mode-css-indent-offset 2)
+  ;;   (setq web-mode-code-indent-offset 2)
+  ;;   (setq web-mode-script-padding 0)
+  ;;   (setq web-mode-style-padding 0)
+  ;;   (setq web-mode-block-padding 0)
+  ;;   (setq web-mode-content-types-alist
+  ;;         '(("jsx" . "\\.js[x]?\\'"))))
+
+  ;; (use-package add-node-modules-path :commands add-node-modules-path)
 #+END_SRC
 
 ** Tree-sitter
 #+BEGIN_SRC emacs-lisp
-  (use-package tree-sitter
-    :init
-    (use-package tree-sitter-langs)
-    ;; (global-tree-sitter-mode)
-    :hook (tree-sitter-after-on . tree-sitter-hl-mode))
+    (use-package treesit
+      :ensure nil
+      :config
+      (setq-default
+       treesit-language-source-alist
+       '((tsx . ("https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src"))
+         (typescript . ("https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src"))
+         ))
+      (treesit-install-language-grammar 'tsx)
+      (treesit-install-language-grammar 'typescript)
+      )
+
+    ;; (use-package treesit-auto
+    ;;   :config
+    ;;   (add-to-list 'treesit-auto-recipe-list
+    ;;                (make-treesit-auto-recipe
+    ;;                 :lang 'tsx
+    ;;                 :ts-mode 'tsx-ts-mode
+    ;;                 :url "https://github.com/tree-sitter/tree-sitter-typescript"
+    ;;                 :source-dir "tsx/src"
+    ;;                 :ext "\\.tsx\\'"))
+    ;;   (setq treesit-auto-langs '(tsx))
+    ;;   )
+
+    ;; (use-package tree-sitter
+    ;;   :init
+    ;;   (use-package tree-sitter-langs)
+    ;;   :hook (tree-sitter-after-on . tree-sitter-hl-mode))
 #+END_SRC
 
 ** Spelling

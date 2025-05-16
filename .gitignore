@@ -9,8 +9,10 @@ elpa/
 eshell/
 games/
 transient/
+tree-sitter/
 tutorial/
 tramp
+projects
 
 custom.el
 config.el

@@ -252,8 +252,14 @@ recent ones. If I decide to try something new, or open some old project in Emacs
     (use-package rust-mode)
     (use-package zig-mode)
     (use-package go-mode)
-    (use-package projectile)
-    (use-package typescript-mode)
+    (use-package python-mode)
+    (use-package lsp-pyright
+      :custom (lsp-pyright-langserver-command "pyright")
+      :hook (python-mode . (lambda ()
+                             (require 'lsp-pyright)
+                             (lsp))))
+    ;; (use-package projectile)
+    ;; (use-package typescript-mode)
     ;; (use-package prettier-js)
     (use-package lsp-java
       :custom (setq lsp-java-server-install-dir
@@ -261,10 +267,11 @@ recent ones. If I decide to try something new, or open some old project in Emacs
     ;; (use-package lsp-tailwindcss
     ;;   :after lsp-mode
     ;;   :init (setq lsp-tailwindcss-add-on-mode t))
-    (use-package web-mode)
+    ;; (use-package web-mode)
     ;; if you want which-key integration
-    ;;(lsp-mode . lsp-enable-which-key-integration))
+    ;; )
     :hook ((lsp-mode . company-mode)
+           (lsp-mode . lsp-enable-which-key-integration)
            (rust-mode . lsp)
            ;; (rust-mode . projectile-mode)
            (go-mode . lsp)
@@ -272,6 +279,7 @@ recent ones. If I decide to try something new, or open some old project in Emacs
            (c++-mode . lsp)
            (c-mode . lsp)
            (zig-mode . lsp)
+           ;; (python-mode . lsp)
            ;; (typescript-ts-mode . lsp)
            ;; (web-mode . lsp)
            ;; (typescript-mode . add-node-modules-path)
@@ -282,17 +290,17 @@ recent ones. If I decide to try something new, or open some old project in Emacs
            ;; (tsx-ts-mode . lsp)
            ;; (tsx-ts-mode . projectile-mode)
            ;; (tsx-ts-mode . prettier-js-mode)
-           (typescript-ts-mode . (lambda ()
-                                   (projectile-mode)
-                                   (lsp)
-                                   ))
+           ;; (typescript-ts-mode . (lambda ()
+           ;;                         (projectile-mode)
+           ;;                         (lsp)
+           ;;                         ))
            )
     :commands lsp
-    :custom
-    (lsp-clients-typescript-prefer-use-project-ts-server 1)
-    (lsp-clients-typescript-tls-path
-          (concat (projectile-project-root)
-                  "node_modules/.bin/typescript-language-server"))
+    ;; :custom
+    ;; (lsp-clients-typescript-prefer-use-project-ts-server 1)
+    ;; (lsp-clients-typescript-tls-path
+    ;;       (concat (projectile-project-root)
+    ;;               "node_modules/.bin/typescript-language-server"))
     ;; () 
     ;; Saved in case I use vue.js with lsp some other time
     ;; :custom
